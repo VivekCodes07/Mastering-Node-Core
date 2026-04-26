@@ -1,8 +1,31 @@
 /*
-The Node.js URL module is a built-in utility used to split a web address into readable parts or construct new URLs. In modern Node.js, the WHATWG URL API is the preferred standard as it is compatible with web browsers
+The URL module in Node.js is a built-in tool used to parse, read,
+and modify web addresses (URLs).
+
+Node.js uses the WHATWG URL API (modern standard used in browsers too).
+It helps us break a URL into parts like hostname, pathname, query params, etc.
 */
-import { URL } from "url";
 
-const myURL = new URL("https://www.example.com:8080/p/a/t/h?query=string#hash");
+// Create a URL object
+const myUrl = new URL('https://example.com:8080/path?name=vivek&id=101');
 
-console.log(myURL);
+// --------------------
+// Access URL parts
+// --------------------
+console.log(myUrl.hostname); // example.com
+console.log(myUrl.pathname); // /path
+
+// --------------------
+// Read query parameters
+// --------------------
+console.log(myUrl.searchParams.get('name')); // vivek
+console.log(myUrl.searchParams.get('id'));   // 101
+
+// --------------------
+// Modify URL
+// --------------------
+// Adds a new query parameter
+myUrl.searchParams.append('age', '20');
+
+// Updated full URL
+console.log(myUrl.href);
