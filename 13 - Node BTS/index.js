@@ -251,6 +251,90 @@ Queues:
 → Microtask Queue (high priority)
 → Timer Queue (setTimeout)
 
+---------------Full System Flow----------------------
+
+
+                    ┌──────────────────────┐
+                    │   Your JS Code       │
+                    └─────────┬────────────┘
+                              ↓
+                    ┌──────────────────────┐
+                    │     Call Stack 🧵     │
+                    │ (Sync Execution)     │
+                    └─────────┬────────────┘
+                              ↓
+                ┌──────── Async Task? ────────┐
+                │                             │
+                │ NO                          │ YES
+                │                             ↓
+                │                  ┌──────────────────────┐
+                │                  │       libuv ⚙️        │
+                │                  │ (Async Manager)      │
+                │                  └─────────┬────────────┘
+                │                            ↓
+                │          ┌──────────────────────────────┐
+                │          │   How to handle task?        │
+                │          └─────────┬─────────┬──────────┘
+                │                    │         │
+                │                    │         │
+                │         ┌──────────▼───┐   ┌─▼──────────────┐
+                │         │ Thread Pool  │   │ OS Async APIs  │
+                │         │     🧵        │   │      🌐         │
+                │         └──────┬───────┘   └──────┬─────────┘
+                │                ↓                  ↓
+                │        (fs, crypto, DNS)     (HTTP, sockets)
+                │                ↓                  ↓
+                │          └──────────┬─────────────┘
+                │                     ↓
+                │          ┌──────────────────────┐
+                │          │     Queues 📬        │
+                │          │ ───────────────────  │
+                │          │ Microtask ⚡         │
+                │          │ Macrotasks 🐢       │
+                │          └─────────┬────────────┘
+                │                    ↓
+                │          ┌──────────────────────┐
+                │          │    Event Loop 🔁      │
+                │          └─────────┬────────────┘
+                │                    ↓
+                └───────────────┬────┘
+                                ↓
+                    ┌──────────────────────┐
+                    │   Call Stack 🧵       │
+                    │ (Execute callback)   │
+                    └──────────────────────┘
+
+
+ ===================Event Loop Priority=====================
+1. Run synchronous code 🧵
+2. Run ALL Microtasks ⚡ (Promises)
+3. Run ONE Macrotask 🐢 (Timers / I/O)
+4. Repeat 🔁
+
+
+
+
+================NODE PHASES (MACROTASK BREAKDOWN)======================
+
+          ┌───────────────┐
+        │ Timers Phase  │  ← setTimeout
+        └──────┬────────┘
+               ↓
+        ┌───────────────┐
+        │ Poll Phase    │  ← fs, http (MOST IMPORTANT)
+        └──────┬────────┘
+               ↓
+        ┌───────────────┐
+        │ Check Phase   │  ← setImmediate
+        └──────┬────────┘
+               ↓
+        ┌───────────────┐
+        │ Close Phase   │
+        └───────────────┘
+
+⚡ Microtasks run between every phase
+
+
 
 
 🧠 FINAL THOUGHT:
